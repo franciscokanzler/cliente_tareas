@@ -1,10 +1,29 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
   <router-view/>
 </template>
+
+<script>
+export default {
+  mounted() {
+    // Verificar la autenticación 
+    const isAuthenticated = this.$store.getters.isAuthenticated;
+
+    if (!isAuthenticated) {
+      // Redirige a la página de inicio de sesión si no está autenticado
+      this.$router.push('/login');
+    }
+  },
+  watch: {
+    '$store.getters.isAuthenticated': function(newIsAuthenticated) {
+      // Este código se ejecutará cada vez que cambie isAuthenticated en el store
+      if (!newIsAuthenticated) {
+        // Redirige a la página de inicio de sesión si no está autenticado
+        this.$router.push('/login');
+      }
+    }
+  },
+};
+</script>
 
 <style>
 #app {
@@ -26,5 +45,11 @@ nav a {
 
 nav a.router-link-exact-active {
   color: #42b983;
+}
+
+.vueButton {
+    background-color: #8ce8bf;
+    color: #49627b;
+    text-decoration: none;
 }
 </style>
