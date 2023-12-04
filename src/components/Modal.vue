@@ -24,7 +24,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @click="cerrarModal()">cerrar</button>
-                        <button type="submit" class="btn vueButton" :hidden="modo === 2">Guardar</button>
+                        <button v-if="modo !== 2" type="submit" class="btn vueButton">Guardar</button>
                     </div>
                 </form>
             </div>
