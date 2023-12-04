@@ -21,19 +21,42 @@
             <div class="card">
                 <div class="card-body">
                     <Modal ref="tareaModal" @procesarPeticion="procesarPeticion" />
-                    <button type="button" class="btn btn-sm mb-3 vueButton" data-bs-toggle="modal"
-                        data-bs-target="#tareaModal" data-bs-whatever="@mdo" @click="prepararModal('registrar')">
-                        Agregar nueva Tarea
-                    </button>
                     <div class="container-fluid">
+                        <button type="button" class="btn btn-sm mb-3 vueButton" data-bs-toggle="modal"
+                            data-bs-target="#tareaModal" data-bs-whatever="@mdo" @click="prepararModal('registrar')">
+                            Agregar nueva Tarea
+                        </button>
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
                                     <tr>
                                         <!-- <th scope="col">#</th> -->
-                                        <th scope="col">Titulo</th>
-                                        <th scope="col">Descripción</th>
-                                        <th colspan="3">Acciones</th>
+                                        <th scope="col">
+                                            <span class="me-1 text-sm">
+                                                <a @click="cambiarOrden('titulo')">
+                                                    <span class="fw-light">{{ columnas.titulo.orden == 'asc' ? '↑↓' : '↓↑' }}</span>
+                                                </a>
+                                            </span>
+                                            Titulo
+                                        </th>
+                                        <th scope="col">
+                                            <span class="me-1 text-sm">
+                                                <a @click="cambiarOrden('descripcion')">
+                                                    <span class="fw-light">{{ columnas.descripcion.orden == 'asc' ? '↑↓' : '↓↑'
+                                                    }}</span>
+                                                </a>
+                                            </span>
+                                            Descripción
+                                        </th>
+                                        <th scope="col">
+                                            <span class="me-1 text-sm">
+                                                <a @click="cambiarOrden('created_at')">
+                                                    <span class="fw-light">{{ columnas.created_at.orden == 'asc' ? '↑↓' : '↓↑' }}</span>
+                                                </a>
+                                            </span>
+                                            Fecha de inicio
+                                        </th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -41,19 +64,20 @@
                                         <!-- <td>{{ tar.id }}</td> -->
                                         <td>{{ tar.titulo }}</td>
                                         <td>{{ tar.descripcion }}</td>
-                                        <td colspan="3" class="d-flex">
-                                            <button type="button" class="btn  btn-sm mb-3 me-1 vueButton"
+                                        <td>{{ fecha(tar.created_at) }}</td>
+                                        <td class="d-flex">
+                                            <button type="button" class="mx-auto btn  btn-sm mb-3 me-1 vueButton"
                                                 data-bs-toggle="modal" data-bs-target="#tareaModal" data-bs-whatever="@mdo"
                                                 @click="prepararModal('editar', tar.id)">
                                                 <font-awesome-icon icon="fa-solid fa-pen" />
                                             </button>
-                                            <button type="button" class="btn btn-success btn-sm mb-3 me-1"
+                                            <button type="button" class="mx-auto btn btn-success btn-sm mb-3 me-1"
                                                 data-bs-toggle="modal" data-bs-target="#tareaModal" data-bs-whatever="@mdo"
                                                 @click="prepararModal('ver', tar.id)">
                                                 <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
                                             </button>
                                             <button @click="Eliminar(tar.id)" type="button"
-                                                class="btn btn-danger btn-sm mb-3 ">
+                                                class="mx-auto btn btn-danger btn-sm mb-3 ">
                                                 <font-awesome-icon icon="fa-solid fa-trash" />
                                             </button>
                                         </td>
@@ -63,11 +87,13 @@
                         </div>
                         <nav aria-label="Page navigation example">
                             <ul class="pagination">
-                                <li class="page-item"><a class="page-link vueButton" v-on:click="changePage(page - 1)">Anterior</a></li>
-                                <li class="page-item"><a class="page-link" >{{ page }}</a></li>
-                                <li class="page-item"><a class="page-link" >de</a></li>
-                                <li class="page-item"><a class="page-link" >{{ pages }}</a></li>
-                                <li class="page-item"><a class="page-link vueButton" v-on:click="changePage(page + 1)">Siguiente</a></li>
+                                <li class="page-item"><a class="page-link vueButton"
+                                        v-on:click="changePage(page - 1)">Anterior</a></li>
+                                <li class="page-item"><a class="page-link">{{ page }}</a></li>
+                                <li class="page-item"><a class="page-link">de</a></li>
+                                <li class="page-item"><a class="page-link">{{ pages }}</a></li>
+                                <li class="page-item"><a class="page-link vueButton"
+                                        v-on:click="changePage(page + 1)">Siguiente</a></li>
                             </ul>
                         </nav>
                     </div>
@@ -89,7 +115,22 @@ export default {
             modo: 0,
             idTarea: null,
             page: 1,
-            pages: 1
+            pages: 1,
+            columna: '',
+            columnas: {
+                'titulo': {
+                    orden: 'asc',
+                    estado: false
+                },
+                'descripcion': {
+                    orden: 'asc',
+                    estado: false
+                },
+                'created_at': {
+                    orden: 'desc',
+                    estado: true
+                },
+            },
         }
     },
     async mounted() {
@@ -173,10 +214,18 @@ export default {
         },
         async cargarTareas() {
             const params = {
-                page: this.page
+                page: this.page,
+                columna: '',
+                orden: '',
             }
+            Object.keys(this.columnas).forEach(key => {
+                if (this.columnas[key].estado) {
+                    params.columna = key;
+                    params.orden = this.columnas[key].orden;
+                }
+            });
             let response = await this.$store.dispatch('getTareas', { params });
-            console.log(response);
+            //console.log(response);
             if (response.status == 200) {
                 this.tareas = response.data.data.data;
                 this.pages = response.data.data.last_page;
@@ -198,15 +247,32 @@ export default {
         },
         //este método se encarga de la paginación de la tabla
         changePage(page) {
-            console.log(page);
+            //console.log(page);
             this.page = page <= 0 || page > this.pages ? this.page : page;
             this.cargarTareas();
+        },
+        cambiarOrden(columna) {
+            Object.keys(this.columnas).forEach(key => {
+                this.columnas[key].estado = (key === columna);
+                this.columnas[key].orden = (key === columna && this.columnas[key].orden === 'asc') ? 'desc' : 'asc';
+            });
+
+            this.cargarTareas();
+            //this.cargarTareas(this.columnas[columna].orden,columna);
+            //console.log(this.columnas.titulo.orden+' '+this.columnas.descripcion.orden+' '+this.columnas.created_at.orden);
+        },
+        fecha(dateTime) {
+            const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+            return new Date(dateTime).toLocaleString('es-ES', opciones);
         }
     },
 }
 </script>
 
 <style scoped>
+.home{
+    background-color: #354248;
+}
 .navColorBackground {
     background-color: #d3fff0;
     ;

@@ -75,10 +75,15 @@ export default createStore({
 		},
 		async getTareas({ state },Data) {
 			if (state.token) {
-				console.log(Data.params.page)
+				//console.log(Data.params.page)
 				try {
 					// Realiza la petición para consultar las Tareas registradas
-					return await axios.get(state.API_BASE_URL + 'tareas?page='+Data.params.page);
+					return await axios.get(state.API_BASE_URL + 'tareas?page='+Data.params.page,  {
+						params: {
+							columna: Data.params.columna,
+							orden: Data.params.orden
+						}
+					});
 				} catch (error) {
 					console.error('Error al consultar tareas:', error.message);
 				}
